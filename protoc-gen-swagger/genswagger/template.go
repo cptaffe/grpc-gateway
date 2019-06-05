@@ -848,13 +848,16 @@ func renderServices(services []*descriptor.Service, paths swaggerPathsObject, re
 				}
 
 				operationObject := &swaggerOperationObject{
-					Tags:       []string{tag},
-					Parameters: parameters,
-					Responses: swaggerResponsesObject{
-						"200": swaggerResponseObject{
-							Description: desc,
-							Schema:      responseSchema,
+					swaggerOperationObjectInner{
+						Tags:       []string{tag},
+						Parameters: parameters,
+						Responses: swaggerResponsesObject{
+							"200": swaggerResponseObject{
+								Description: desc,
+								Schema:      responseSchema,
+							},
 						},
+						Extensions: map[string]json.RawMessage{},
 					},
 				}
 				if bIdx == 0 {
@@ -924,6 +927,11 @@ func renderServices(services []*descriptor.Service, paths swaggerPathsObject, re
 								Description: resp.Description,
 								Schema:      swaggerSchemaFromProtoSchema(resp.Schema, reg, customRefs),
 							}
+						}
+					}
+					if opts.Extensions != nil {
+						for name, value := range opts.Extensions {
+							operationObject.Extensions[name] = json.RawMessage(value.GetValue())
 						}
 					}
 

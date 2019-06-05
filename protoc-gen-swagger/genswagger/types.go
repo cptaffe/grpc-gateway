@@ -96,8 +96,8 @@ type swaggerPathItemObject struct {
 	Patch  *swaggerOperationObject `json:"patch,omitempty"`
 }
 
-// http://swagger.io/specification/#operationObject
-type swaggerOperationObject struct {
+// HACK: Allows implementing MarshalJSON and serializing this struct without recursing
+type swaggerOperationObjectInner struct {
 	Summary     string                  `json:"summary,omitempty"`
 	Description string                  `json:"description,omitempty"`
 	OperationID string                  `json:"operationId"`
@@ -108,6 +108,34 @@ type swaggerOperationObject struct {
 
 	Security     *[]swaggerSecurityRequirementObject `json:"security,omitempty"`
 	ExternalDocs *swaggerExternalDocumentationObject `json:"externalDocs,omitempty"`
+	Extensions   map[string]json.RawMessage          `json:"-"`
+}
+
+func (op swaggerOperationObject) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	original, err := json.Marshal(op.swaggerOperationObjectInner)
+	if err != nil {
+		return nil, err
+	}
+	// write all but the traling '}'
+	buf.Write(original[:len(original)-1])
+	if len(op.Extensions) != 0 {
+		buf.WriteString(",")
+		extensions, err := json.Marshal(op.Extensions)
+		if err != nil {
+			return nil, err
+		}
+		// write all but the leading '{'
+		buf.Write(extensions[1:len(extensions)])
+	} else {
+		buf.WriteString("}")
+	}
+	return buf.Bytes(), nil
+}
+
+// http://swagger.io/specification/#operationObject
+type swaggerOperationObject struct {
+	swaggerOperationObjectInner
 }
 
 type swaggerParametersObject []swaggerParameterObject

@@ -848,17 +848,15 @@ func renderServices(services []*descriptor.Service, paths swaggerPathsObject, re
 				}
 
 				operationObject := &swaggerOperationObject{
-					swaggerOperationObjectInner{
-						Tags:       []string{tag},
-						Parameters: parameters,
-						Responses: swaggerResponsesObject{
-							"200": swaggerResponseObject{
-								Description: desc,
-								Schema:      responseSchema,
-							},
+					Tags:       []string{tag},
+					Parameters: parameters,
+					Responses: swaggerResponsesObject{
+						"200": swaggerResponseObject{
+							Description: desc,
+							Schema:      responseSchema,
 						},
-						Extensions: map[string]json.RawMessage{},
 					},
+					Extensions: map[string]json.RawMessage{},
 				}
 				if bIdx == 0 {
 					operationObject.OperationID = fmt.Sprintf("%s", meth.GetName())
